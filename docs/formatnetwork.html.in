@@ -17,13 +17,8 @@
 
     <p>
       The root element required for all virtual networks is
-      named <code>network</code> and has no configurable attributes
-      (although <span class="since">since 0.10.0</span> there is one
-      optional read-only attribute - when examining the live
-      configuration of a network, the
-      attribute <code>connections</code>, if present, specifies the
-      number of guest interfaces currently connected via this
-      network).  The network XML format is
+      named <code>network</code>.
+      The network XML format is
       available <span class="since">since 0.3.0</span>
     </p>
 
@@ -45,6 +40,39 @@
   ...</pre>
 
     <dl>
+      <dt><code>network</code></dt>
+      <dd>The <code>network</code> element is the main container for
+      describing virtual networks and supports the following attributes:
+         <dl>
+            <dt><code>ipv6</code></dt>
+               <dd>
+               When set to <code>yes</code>, the optional parameter
+               <code>ipv6</code> enables a network definition with no IPv6
+               gateway addresses specified to have guest-to-guest communications.
+               For further information, see below for the example with no
+               gateway addresses.
+               <span class="since">Since 1.0.1</span>
+               </dd>
+            <dt><code>trustGuestRxFilters</code></dt>
+               <dd>
+               The optional parameter <code>trustGuestRxFilters</code> can
+               be used to set that attribute of the same name for each domain
+               interface connected to this network (<span class="since">since
+               1.2.10</span>). See the
+               <a href="formatdomain.html#elementsNICS">Network interfaces</a>
+               section of the domain XML documentation for more details. Note
+               that an explicit setting of this attribute in a portgroup or the
+               individual domain interface will override the setting in the network.
+               </dd>
+            <dt><code>connections</code></dt>
+               <dd>
+               The optional read-only attribute <code>connections</code> specifies
+               the number of guest interfaces currently connected via this network
+               when examining the live configuration of a network.
+               <span class="since">Since 0.3.0</span>
+               </dd>
+         </dl>
+      </dd>
       <dt><code>name</code></dt>
       <dd>The content of the <code>name</code> element provides
         a short name for the virtual network. This name should
@@ -57,30 +85,16 @@
         a globally unique identifier for the virtual network.
         The format must be RFC 4122 compliant, eg <code>3e3fce45-4f53-4fa7-bb32-11f34168b82b</code>.
         If omitted when defining/creating a new network, a random
-        UUID is generated. <span class="since">Since 0.3.0</span></dd>
+        UUID is generated. <span class="since">Since 0.3.0</span>
+      </dd>
+      <dt><code>metadata</code></dt>
       <dd>The <code>metadata</code> node can be used by applications to
         store custom metadata in the form of XML nodes/trees. Applications
         must use custom namespaces on their XML nodes/trees, with only
         one top-level element per namespace (if the application needs
         structure, they should have sub-elements to their namespace
-        element). <span class="since">Since 2.1.0</span></dd>
-      <dt><code>ipv6</code></dt>
-      <dd>When set to <code>yes</code>, the optional parameter
-        <code>ipv6</code> enables
-        a network definition with no IPv6 gateway addresses specified
-        to have guest-to-guest communications.  For further information,
-        see the example below for the example with no gateway addresses.
-        <span class="since">Since 1.0.1</span></dd>
-      <dt><code>trustGuestRxFilters</code></dt>
-      <dd>The optional parameter <code>trustGuestRxFilters</code> can
-        be used to set that attribute of the same name for each domain
-        interface connected to this network (<span class="since">since
-        1.2.10</span>). See
-        the <a href="formatdomain.html#elementsNICS">Network
-        interfaces</a> section of the domain XML documentation for
-        more details. Note that an explicit setting of this attribute
-        in a portgroup or the individual domain interface will
-        override the setting in the network.</dd>
+        element). <span class="since">Since 2.1.0</span>
+      </dd>
     </dl>
 
     <h3><a id="elementsConnect">Connectivity</a></h3>
@@ -100,85 +114,97 @@
 
     <dl>
       <dt><code>bridge</code></dt>
-      <dd>The <code>name</code> attribute on the <code>bridge</code> element
-        defines the name of a bridge device which will be used to construct
-        the virtual network. The virtual machines will be connected to this
-        bridge device allowing them to talk to each other. The bridge device
-        may also be connected to the LAN. When defining
-        a new network with a <code>&lt;forward&gt;</code> mode of
-
-        "nat", "route", or "open" (or an isolated network with
-        no <code>&lt;forward&gt;</code> element), libvirt will
-        automatically generate a unique name for the bridge device if
-        none is given, and this name will be permanently stored in the
-        network configuration so that that the same name will be used
-        every time the network is started. For these types of networks
-        (nat, route, open, and isolated), a bridge name beginning with the
-        prefix "virbr" is recommended (and that is what is
-        auto-generated), but not enforced.
-        Attribute <code>stp</code> specifies if Spanning Tree Protocol
-        is 'on' or 'off' (default is
-        'on'). Attribute <code>delay</code> sets the bridge's forward
-        delay value in seconds (default is 0).
-        <span class="since">Since 0.3.0</span>
-
-        <p>
-          The <code>macTableManager</code> attribute of the bridge
-          element is used to tell libvirt how the bridge's MAC address
-          table (used to determine the correct egress port for packets
-          based on destination MAC address) will be managed. In the
-          default <code>kernel</code> setting, the kernel
-          automatically adds and removes entries, typically using
-          learning, flooding, and promiscuous mode on the bridge's
-          ports in order to determine the proper egress port for
-          packets.  When <code>macTableManager</code> is set
-          to <code>libvirt</code>, libvirt disables kernel management
-          of the MAC table (in the case of the Linux host bridge, this
-          means enabling vlan_filtering on the bridge, and disabling
-          learning and unicast_filter for all bridge ports), and
-          explicitly adds/removes entries to the table according to
-          the MAC addresses in the domain interface configurations.
-          Allowing libvirt to manage the MAC table can improve
-          performance - with a Linux host bridge, for example, turning
-          off learning and unicast_flood on ports has its own
-          performance advantage, and can also lead to an additional
-          boost by permitting the kernel to automatically turn off
-          promiscuous mode on some ports of the bridge (in particular,
-          the port attaching the bridge to the physical
-          network). However, it can also cause some networking setups
-          to stop working (e.g. vlan tagging, multicast,
-          guest-initiated changes to MAC address) and is not supported
-          by older kernels.
-          <span class="since">Since 1.2.11, requires kernel 3.17 or
-          newer</span>
-        </p>
-
-        <p>
-          The optional <code>zone</code> attribute of
-          the <code>bridge</code> element is used to specify
-          the <a href="https://firewalld.org">firewalld</a>
-          zone for the bridge of a network with <code>forward</code>
-          mode of "nat", "route", "open", or one with
-          no <code>forward</code> specified. By default, the bridges
-          of all virtual networks with these forward modes are placed
-          in the firewalld zone named "libvirt", which permits
-          incoming DNS, DHCP, TFTP, and SSH to the host from guests on
-          the network. This behavior can be changed either by
-          modifying the libvirt zone (using firewalld management
-          tools), or by placing the network in a different zone (which
-          will also be managed using firewalld tools).
-          <span class="since">Since 5.1.0</span>
-        </p>
+      <dd>
+      The <code>bridge</code> element will be used to construct the
+      virtual network. The virtual machines will be connected to this bridge
+      device allowing them to talk to each other. The bridge device may also
+      be connected to the LAN.
+      <p>
+      The following attributes define the bridge device:
+      </p>
+      <dl>
+         <dt><code>name</code></dt>
+         <dd>
+         This attribute defines the name of a bridge device. When defining
+         a new network with a <code>&lt;forward&gt;</code> mode of
+         "nat", "route", or "open" (or an isolated network with
+         no <code>&lt;forward&gt;</code> element), libvirt will
+         automatically generate a unique name for the bridge device if
+         none is given, and this name will be permanently stored in the
+         network configuration so that that the same name will be used
+         every time the network is started. For these types of networks
+         (nat, route, open, and isolated), a bridge name beginning with the
+         prefix "virbr" is recommended (and that is what is
+         auto-generated), but not enforced.
+         </dd>
+         <dt><code>stp</code></dt>
+         <dd>
+         This attribute specifies if Spanning Tree Protocol is
+        'on' or 'off' (default is'on').
+         </dd>
+         <dt><code>delay</code></dt>
+         <dd>
+         This attribute sets the bridge's forward
+         delay value in seconds (default is 0).
+         <span class="since">Since 0.3.0</span>
+         </dd>
+         <dt><code>macTableManager</code></dt>
+         <dd>
+         This attribute is used to tell libvirt how the bridge's MAC address
+         table (used to determine the correct egress port for packets
+         based on destination MAC address) will be managed. In the
+         default <code>kernel</code> setting, the kernel
+         automatically adds and removes entries, typically using
+         learning, flooding, and promiscuous mode on the bridge's
+         ports in order to determine the proper egress port for
+         packets.  When <code>macTableManager</code> is set
+         to <code>libvirt</code>, libvirt disables kernel management
+         of the MAC table (in the case of the Linux host bridge, this
+         means enabling vlan_filtering on the bridge, and disabling
+         learning and unicast_filter for all bridge ports), and
+         explicitly adds/removes entries to the table according to
+         the MAC addresses in the domain interface configurations.
+         Allowing libvirt to manage the MAC table can improve
+         performance - with a Linux host bridge, for example, turning
+         off learning and unicast_flood on ports has its own
+         performance advantage, and can also lead to an additional
+         boost by permitting the kernel to automatically turn off
+         promiscuous mode on some ports of the bridge (in particular,
+         the port attaching the bridge to the physical
+         network). However, it can also cause some networking setups
+         to stop working (e.g. vlan tagging, multicast,
+         guest-initiated changes to MAC address) and is not supported
+         by older kernels.
+         <span class="since">Since 1.2.11, requires kernel 3.17 or
+         newer</span>
+         </dd>
+         <dl><code>zone</code></dl>
+         <dd>
+         This optional attribute is used to specify
+         the <a href="https://firewalld.org">firewalld</a>
+         zone for the bridge of a network with <code>forward</code>
+         mode of "nat", "route", "open", or one with
+         no <code>forward</code> specified. By default, the bridges
+         of all virtual networks with these forward modes are placed
+         in the firewalld zone named "libvirt", which permits
+         incoming DNS, DHCP, TFTP, and SSH to the host from guests on
+         the network. This behavior can be changed either by
+         modifying the libvirt zone (using firewalld management
+         tools), or by placing the network in a different zone (which
+         will also be managed using firewalld tools).
+         <span class="since">Since 5.1.0</span>
+         </dd>
+      </dl>
       </dd>
 
       <dt><code>mtu</code></dt>
       <dd>
-        The <code>size</code> attribute of the <code>mtu></code>
+        The <code>size</code> attribute of the <code>mtu</code>
         element specifies the Maximum Transmission Unit (MTU) for the
         network. <span class="since">Since 3.1.0</span>. In the case
         of a libvirt-managed network (one with forward mode
-        of <code>nat</code>, <code>route</code>, <code>open</code>, or
-        no <code>forward</code> element (i.e. an isolated network),
+        of "nat", "route", "open", or
+        no <code>&lt;forward&gt;</code> element, i.e. an isolated network),
         this will be the MTU assigned to the bridge device when
         libvirt creates it, and thereafter also assigned to all tap
         devices created to connect guest interfaces. Network types not
@@ -208,17 +234,26 @@
         </p>
       </dd>
       <dt><code>forward</code></dt>
-      <dd>Inclusion of the <code>forward</code> element indicates that
+      <dd>
+        Inclusion of the <code>forward</code> element indicates that
         the virtual network is to be connected to the physical
-        LAN.<span class="since">Since 0.3.0.</span>
-        The <code>mode</code> attribute determines the method of
-        forwarding. If there is no <code>forward</code> element, the
+        LAN. If there is no <code>forward</code> element, the
         network will be isolated from any other network (unless a
         guest connected to that network is acting as a router, of
-        course). The following are valid settings
+        course).<span class="since">Since 0.3.0.</span>
+        <p>
+        The optional <code>dev</code> attribute identifies a single
+        physical interface that can be used for this network, see also
+        subelement <code>interface</code> for using more than one
+        physical interface.
+        </p>
+        <p>
+        The <code>mode</code> attribute determines the method of
+        forwarding. The following are valid settings
         for <code>mode</code> (if there is a <code>forward</code>
         element but mode is not specified, <code>mode='nat'</code> is
         assumed):
+        </p>
         <dl>
           <dt><code>nat</code></dt>
           <dd>
@@ -318,30 +353,37 @@
 
           <dt><code>bridge</code></dt>
           <dd>
-            This network describes either 1) an existing host bridge
-            that was configured outside of libvirt (if
-            a <code>&lt;bridge name='xyz'/&gt;</code> element has been
-            specified, <span class="since">Since 0.9.4</span>), 2) an
-            existing Open vSwitch bridge that was configured outside of
-            libvirt (if both a <code>&lt;bridge name='xyz'/&gt;</code>
-            element <b>and</b> a <code>&lt;virtualport
-            type='openvswitch'/&gt;</code> have been
-            specified <span class="since">Since 0.10.0</span>) 3) an
-            interface or group of interfaces to be used for a "direct"
-            connection via macvtap using macvtap's "bridge" mode (if
-            the forward element has one or
-            more <code>&lt;interface&gt;</code>
-            subelements, <span class="since">Since 0.9.4</span>)
-            (see <a href="formatdomain.html#elementsNICSDirect">Direct
-            attachment to physical interface</a> for descriptions of
-            the various macvtap modes). libvirt doesn't attempt to
-            manage the bridge interface at all, thus
-            the <code>&lt;bridge&gt;</code> element's <code>stp</code>
-            and <code>delay</code> attributes are not allowed; no
-            iptables rules, IP addresses, or DHCP/DNS services are
-            added; at the IP level, the guest interface appears to be
-            directly connected to the physical
-            interface.<span class="since">Since 0.9.4</span>
+            This network describes either
+            <ol>
+               <li>an existing host bridge that was configured outside
+                   of libvirt (if a <code>&lt;bridge name='xyz'/&gt;</code>
+                   element has been specified,
+                   <span class="since">Since 0.9.4</span>),
+               </li>
+               <li>an existing Open vSwitch bridge that was configured
+                   outside of libvirt (if both a
+                   <code>&lt;bridge name='xyz'/&gt;</code>
+                   element <b>and</b> a <code>&lt;virtualport
+                   type='openvswitch'/&gt;</code> have been
+                   specified <span class="since">Since 0.10.0</span>)
+               </li>
+               <li>an interface or group of interfaces to be used for a "direct"
+                   connection via macvtap using macvtap's "bridge" mode (if
+                   the forward element has one or
+                   more <code>&lt;interface&gt;</code>
+                   subelements, see
+                   <a href="formatdomain.html#elementsNICSDirect">Direct
+                   attachment to physical interface</a> for descriptions of
+                   the various macvtap modes). libvirt doesn't attempt to
+                   manage the bridge interface at all, thus
+                   the <code>&lt;bridge&gt;</code> element's <code>stp</code>
+                   and <code>delay</code> attributes are not allowed; no
+                   iptables rules, IP addresses, or DHCP/DNS services are
+                   added; at the IP level, the guest interface appears to be
+                   directly connected to the physical
+                   interface.<span class="since">Since 0.9.4</span>
+                </li>
+             </ol>
           </dd>
           <dt><code>private</code></dt>
           <dd>
@@ -378,10 +420,10 @@
             This network uses a macvtap "direct" connection in
             "passthrough" mode to connect each guest to the network
             (note that this is <i>not</i> the same thing as "PCI
-            passthrough"). The physical interface to be used will be
+            passthrough", s. below). The physical interface to be used will be
             picked from among those listed
             in <code>&lt;interface&gt;</code> subelements of
-            the <code>&lt;forward&gt;</code> element.  Each physical
+            the <code>&lt;forward&gt;</code> element. Each physical
             interface can only be in use by a single guest interface
             at a time, so libvirt will keep track of which interfaces
             are currently in use, and only assign unused interfaces
@@ -393,15 +435,15 @@
           </dd>
           <dt><code>hostdev</code></dt>
           <dd>
-            This network facilitates PCI Passthrough of a network
+            This network facilitates PCI passthrough of a network
             device.  A network device is chosen from the interface
             pool and directly assigned to the guest using generic
             device passthrough, after first optionally setting the
             device's MAC address and vlan tag to the configured value,
             and optionally associating the device with an 802.1Qbh
             capable switch using a <code>&lt;virtualport&gt;</code>
-            element.  Note that - due to limitations in standard
-            single-port PCI ethernet card driver design - only SR-IOV
+            element.  Note that due to limitations in standard
+            single-port PCI ethernet card driver design, only SR-IOV
             (Single Root I/O Virtualization) virtual function (VF)
             devices can be assigned in this manner; to assign a
             standard single-port PCI or PCIe ethernet card to a guest,
@@ -410,8 +452,8 @@
 
             <p>
               To force use of a particular type of device assignment,
-              a &lt;forward type='hostdev'&gt; interface can have an
-              optional <code>driver</code> sub-element with
+              a <code>&lt;forward type='hostdev'&gt;</code> interface can
+              have an optional <code>driver</code> sub-element with
               a <code>name</code> attribute set to either "vfio" (VFIO
               is a new method of device assignment that is compatible
               with UEFI Secure Boot) or "kvm" (the legacy device
@@ -463,10 +505,10 @@
 ...
         </pre>
         <p>
-          <span class="since">since 0.10.0</span>,
+          <span class="since">Since 0.10.0</span>,
           <code>&lt;interface&gt;</code> also has an optional read-only
-          attribute - when examining the live configuration of a
-          network, the attribute <code>connections</code>, if present,
+          attribute that is useful when examining the live configuration of a
+          network: the attribute <code>connections</code>, if present,
           specifies the number of guest interfaces currently connected
           via this physical interface.
         </p>
@@ -497,7 +539,7 @@
         or, if it can't find an unused interface, fail the operation.</p>
 
         <p>
-          <span class="since">since 0.10.0</span> When using forward
+          <span class="since">Since 0.10.0</span>, when using forward
           mode 'hostdev', the interface pool is specified with a list
           of <code>&lt;address&gt;</code> elements, each of which has
           <code>&lt;type&gt;</code> (must always be <code>'pci'</code>),
