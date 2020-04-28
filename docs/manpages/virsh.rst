@@ -1345,7 +1345,7 @@ blockpull
 
 .. code-block::
 
-   blockpull domain path [bandwidth] [--bytes] [base]
+   blockpull domain path [bandwidth [--bytes] [base]]
       [--wait [--verbose] [--timeout seconds] [--async]]
       [--keep-relative]
 
@@ -1355,6 +1355,12 @@ name of one of the backing files in the chain, then that file becomes
 the new backing file and only the intermediate portion of the chain is
 pulled.  Once all requested data from the backing image chain has been
 pulled, the disk no longer depends on that portion of the backing chain.
+
+*base* can be specified in two ways: either as indexed target name 'name[i]'
+where 'name' corresponds to the disk target name (<target dev='name'/>) and
+'i' corresponds to the 'index' of the '<backingStore>'; or as the file name
+of the backing file (<source file='name'/>).
+
 
 By default, this command returns as soon as possible, and data for
 the entire disk is pulled in the background; the progress of the
@@ -1367,16 +1373,19 @@ is triggered, *--async* will return control to the user as fast as
 possible, otherwise the command may continue to block a little while
 longer until the job is done cleaning up.
 
-Using the *--keep-relative* flag will keep the backing chain names
-relative.
-
 *path* specifies fully-qualified path of the disk; it corresponds
 to a unique target name (<target dev='name'/>) or source file (<source
 file='name'/>) for one of the disk devices attached to *domain* (see
 also ``domblklist`` for listing these names).
+
 *bandwidth* specifies copying bandwidth limit in MiB/s. For further information
 on the *bandwidth* argument see the corresponding section for the ``blockjob``
-command.
+command. Using *--bytes* flag indicates the value in *bandwidth* is given in
+bytes.
+
+Using the *--keep-relative* flag will keep the backing chain names
+relative (details on `https://www.libvirt.org/kbase/backing_chains.html
+<https://www.libvirt.org/kbase/backing_chains.html>`__).
 
 
 blockresize
