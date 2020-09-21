@@ -1,0 +1,24 @@
+/root/code/libvirt/libvirt-src/tests/qemuxml2argvdata/net-vhostuser-multiq.err
+unsupported configuration: interface 52:54:00:ee:96:6e - multiqueue is not supported for network interfaces of type vhost-user with this QEMU binary
+/root/code/libvirt/libvirt-src/tests/qemuxml2argvdata/net-vhostuser-fail.err
+unsupported configuration: interface 52:54:00:ee:96:6b - custom tap device path is not supported for network interfaces of type vhostuser
+/root/code/libvirt/libvirt-src/tests/qemuxml2argvdata/net-hostdev-fail.err
+unsupported configuration: interface 00:11:22:33:44:55 - custom tap device path is not supported for network interfaces of type hostdev
+/root/code/libvirt/libvirt-src/tests/qemuxml2argvdata/usb-bus-missing.err
+XML error: USB bus 1 requested but no controller with that index is present
+/root/code/libvirt/libvirt-src/tests/qemuxml2argvdata/usb-controller-default-unavailable-q35.err
+unsupported configuration: no model provided for USB controller
+/root/code/libvirt/libvirt-src/tests/qemuxml2argvdata/usb-controller-explicit-unavailable-q35.err
+unsupported configuration: nec-usb-xhci not supported in this QEMU binary
+/root/code/libvirt/libvirt-src/tests/qemuxml2argvdata/usb-controller-qemu-xhci-unavailable.err
+unsupported configuration: qemu-xhci not supported in this QEMU binary
+/root/code/libvirt/libvirt-src/tests/qemuxml2argvdata/iothreads-nocap.err
+unsupported configuration: IOThreads not supported for this QEMU
+/root/code/libvirt/libvirt-src/tests/qemuxml2argvdata/cpu-nofallback.err
+unsupported configuration: CPU model Westmere is not supported by hypervisor
+/root/code/libvirt/libvirt-src/tests/qemuxml2argvdata/cpu-host-model-nofallback.err
+unsupported configuration: CPU model core2duo is not supported by hypervisor
+/root/code/libvirt/libvirt-src/tests/qemuxml2argvdata/cpu-qemu-host-passthrough.err
+unsupported configuration: CPU mode 'host-passthrough' for x86_64 qemu domain on x86_64 host is not supported by hypervisor
+/root/code/libvirt/libvirt-src/tests/qemuxml2argvdata/cpu-s390-features.err
+internal error: CPU features not supported by hypervisor for s390x architecture

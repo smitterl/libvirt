@@ -615,7 +615,8 @@ testCompareXMLToArgv(const void *data)
     if (!(vm->def = virDomainDefParseFile(info->infile,
                                           driver.xmlopt,
                                           NULL, parseFlags))) {
-        if (flags & FLAG_EXPECT_PARSE_ERROR)
+        if (flags & FLAG_EXPECT_PARSE_ERROR &&
+            virTestCompareToFile(virGetLastError()->message, info->errfile) >= 0)
             goto ok;
         goto cleanup;
     }
@@ -651,7 +652,8 @@ testCompareXMLToArgv(const void *data)
 
     if (!(cmd = testCompareXMLToArgvCreateArgs(&driver, vm, migrateURI, info,
                                                flags, false))) {
-        if (flags & FLAG_EXPECT_FAILURE)
+        if (flags & FLAG_EXPECT_FAILURE &&
+            virTestCompareToFile(virGetLastError()->message, info->errfile) >= 0)
             goto ok;
         goto cleanup;
     }
@@ -704,6 +706,8 @@ testInfoSetPaths(struct testQemuInfo *info,
                                    abs_srcdir, info->name);
     info->outfile = g_strdup_printf("%s/qemuxml2argvdata/%s%s.args",
                                     abs_srcdir, info->name, suffix ? suffix : "");
+    info->errfile = g_strdup_printf("%s/qemuxml2argvdata/%s%s.err",
+                                      abs_srcdir, info->name, suffix ? suffix : "");
 }
 
 # define FAKEROOTDIRTEMPLATE abs_builddir "/fakerootdir-XXXXXX"
